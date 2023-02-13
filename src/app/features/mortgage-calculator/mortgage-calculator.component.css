@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+@media (max-width: 465px){
+  .container{
+      display: none;
+  }
+
+  .col5 {
+    display: flex;
+    flex-direction: column;
+    margin-inline: 0;
+  }
+}
+
+mat-form-field{
+  width: auto;
+}
+
+::ng-deep mat-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: transparent;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+  }
+
+.col {
+  display: flex;
+  flex-direction: column;
+  margin-inline: 15px;
+  width: 435px;
+  }
+
+  .col5 {
+    display: flex;
+    gap: 5px;
+  }
