@@ -1,34 +1,43 @@
 <div class="mortgageCalculator">
-  <div class="mortgage_inputForm row">
-    <div class="payment_inputForm col">
+  <div class="mortgage-inputForm row">
+    <div class="payment-inputForm col">
       <h1> Payment Plan</h1>
       <mat-form-field appearance="fill">
-          <mat-label>Mortgage Amount ($)</mat-label>
-          <input matInput>
-      </mat-form-field>
+          <mat-label>Mortgage Amount</mat-label>
+          <input matInput type="number" [formControl]="integerControl" [(ngModel)]="formFiledInput.mortgageAmount">
+          <span matTextPrefix>$&nbsp;</span>
+        </mat-form-field>
       <div class="col5">
-        <mat-form-field appearance="fill">
-          <mat-label>Interest Rate (%)</mat-label>
-          <input matInput>
+        <mat-form-field appearance="fill" floatLabel="always">
+          <mat-label>Interest Rate</mat-label>
+          <input matInput type="number" [formControl]="rateControl" placeholder="0.00" [(ngModel)]="formFiledInput.interestRate">
+          <span matTextSuffix>%&nbsp;</span>
         </mat-form-field>
         <mat-form-field appearance="fill">
-          <mat-label>Payment Frequency</mat-label>
-          <mat-select>
-            <mat-option>None</mat-option>
-            <mat-option value="AccW">Accelerated Weekly</mat-option>
-            <mat-option value="W">Weekly</mat-option>
-            <mat-option value="AccBiW">Accelerated Bi-weekly</mat-option>
-            <mat-option value="BiW">Bi-Weekly (every 2 weeks)</mat-option>
-            <mat-option value="SemiM">Semi-monthly (24x per year)</mat-option>
-            <mat-option value="M">Monthly (12x per year)</mat-option>
+          <mat-label>Term</mat-label>
+          <mat-select [(ngModel)]="formFiledInput.term">
+            <mat-option *ngFor="let num of termsOptions" [value]="num">
+              {{num}}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
+      <mat-form-field appearance="fill">
+        <mat-label>Payment Frequency</mat-label>
+        <mat-select [(ngModel)]="formFiledInput.paymentFrequency">
+          <mat-option value="AccW">Accelerated Weekly</mat-option>
+          <mat-option value="W">Weekly</mat-option>
+          <mat-option value="AccBiW">Accelerated Bi-weekly</mat-option>
+          <mat-option value="BiW">Bi-Weekly (every 2 weeks)</mat-option>
+          <mat-option value="SemiM">Semi-monthly (24x per year)</mat-option>
+          <mat-option value="M">Monthly (12x per year)</mat-option>
+        </mat-select>
+      </mat-form-field>
       <span>Amortization Period :</span>
       <div class="yearsAndMonths col5">
         <mat-form-field appearance="fill">
           <mat-label>Years</mat-label>
-          <mat-select>
+          <mat-select [(ngModel)]="formFiledInput.amortPeriodYear">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let num of yearsOptions" [value]="num">
               {{num}}
@@ -37,7 +46,7 @@
         </mat-form-field>
         <mat-form-field appearance="fill">
           <mat-label>Months</mat-label>
-          <mat-select>
+          <mat-select [(ngModel)]="formFiledInput.amortPeriodMonth">
             <mat-option>None</mat-option>
             <mat-option *ngFor="let num of monthsOptions" [value]="num">
               {{num}}
@@ -45,36 +54,55 @@
           </mat-select>
         </mat-form-field>
       </div>
-      <mat-form-field appearance="fill">
-        <mat-label>Term</mat-label>
-        <mat-select>
-          <mat-option>None</mat-option>
-          <mat-option *ngFor="let num of termsOptions" [value]="num">
-            {{num}}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
     </div>
-    <div class="prePayment_inputForm col">
-      <h1> PrePayment Plan</h1>
-      <mat-form-field appearance="fill">
-          <mat-label>Prepayment Amount ($)</mat-label>
-          <input matInput>
-      </mat-form-field>
+    <div class="prePayment-inputForm col">
+      <h1> Prepayment Plan</h1>
       <div class="col5">
         <mat-form-field appearance="fill">
-          <mat-label>Prepayment Frequency</mat-label>
-          <mat-select>
-            <mat-option value="1">One time</mat-option>
-            <mat-option value="Y">Each year</mat-option>
-            <mat-option value="SameAsRegPay">Same as regular</mat-option>
-          </mat-select>
+          <mat-label>Prepayment Amount</mat-label>
+          <input type="number" [formControl]="integerControl" matInput [(ngModel)]="formFiledInput.prepayAmount">
+          <span matTextPrefix>$&nbsp;</span>
         </mat-form-field>
         <mat-form-field appearance="fill">
           <mat-label>Start With Payment</mat-label>
-          <input matInput>
+          <input type="number" [formControl]="integerControl" placeholder="eg. 1" matInput [(ngModel)]="formFiledInput.prepayStartNthPay">
         </mat-form-field>
       </div>
+      <mat-form-field appearance="fill">
+        <mat-label>Prepayment Frequency</mat-label>
+        <mat-select [(ngModel)]="formFiledInput.prepayFrequency">
+          <mat-option value="1">One time</mat-option>
+          <mat-option value="Y">Each year</mat-option>
+          <mat-option value="SameAsRegPay">Same as regular</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
+  </div>
+  <div class="buttonContainer row">
+    <button mat-flat-button color="primary" (click)="submit()">Calculate</button>
+  </div>
+  <div class="tableContainer row" *ngIf="mortgageResult.length > 0">
+    <table mat-table [dataSource]="mortgageResult" class="mat-elevation-z8 demo-table">
+      <!-- Name Column -->
+      <ng-container matColumnDef="col-name">
+        <th mat-header-cell *matHeaderCellDef> Category </th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
+
+      <!-- Weight Column -->
+      <ng-container matColumnDef="col-term">
+        <th mat-header-cell *matHeaderCellDef> Term </th>
+        <td mat-cell *matCellDef="let element"> {{element.termValue}} </td>
+      </ng-container>
+
+      <!-- Symbol Column -->
+      <ng-container matColumnDef="col-period">
+        <th mat-header-cell *matHeaderCellDef> Amortization Period </th>
+        <td mat-cell *matCellDef="let element"> {{element.amortPeriodValue}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </div>
 </div>

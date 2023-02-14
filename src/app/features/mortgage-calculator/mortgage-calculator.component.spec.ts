@@ -6,6 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule} from '@angular/material/select';
 import { MatRippleModule } from '@angular/material/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
 
 describe('MortgageCalculatorComponent', () => {
   let component: MortgageCalculatorComponent;
@@ -16,11 +18,13 @@ describe('MortgageCalculatorComponent', () => {
       declarations: [ MortgageCalculatorComponent ],
       imports: [
         BrowserAnimationsModule,
+        FormsModule,
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,
         MatRippleModule,
         MatSelectModule,
+        MatTableModule
       ],
     })
     .compileComponents();
@@ -34,8 +38,8 @@ describe('MortgageCalculatorComponent', () => {
     expect(component).toBeTruthy();
     const mortgageAmount = 1000000;
     const numOfPays = 12*10;
-    const monthlyRate = 1/100;
-    const fixedPayment = component.getFixedPayment(mortgageAmount, monthlyRate, numOfPays);
+    const monthlyRate = 12/12/100;
+    const fixedPayment = component.getMortgageFixedPayment(mortgageAmount, monthlyRate, numOfPays);
     expect(fixedPayment).toBe(14347.094840258731);
   });
 
