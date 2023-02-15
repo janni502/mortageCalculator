@@ -18,7 +18,6 @@ export class MortgageCalculatorComponent {
   formFiledInput: FormFiledInput = {} as FormFiledInput;
   submitErrorMessage: string = "";
   enableSubmitErrorMessage: boolean = false;
-
   inputFormGroup: FormGroup;
   requiredPositiveValidator: Validators[] = [Validators.required, Validators.min(0)];
 
@@ -38,7 +37,8 @@ export class MortgageCalculatorComponent {
     // customer the period validators
     this.inputFormGroup.get('amortPeriodYear')?.valueChanges.subscribe(val => {
       if (val > 0) {
-        this.inputFormGroup.controls['term'].addValidators([Validators.max(val)]);
+        this.inputFormGroup.controls['term'].clearValidators();
+        this.inputFormGroup.controls['term'].setValidators([Validators.required,Validators.max(val)]);
         this.inputFormGroup.controls['term'].updateValueAndValidity({emitEvent:false});
       }
     });
@@ -59,13 +59,17 @@ export class MortgageCalculatorComponent {
   /**
    * Returns the value of a base expression taken to a specified power.
    * @param mortgageAmount The principle amount of the mortgage.
-   * @param ratePerPay The interest rate of each pay.
+   * @param eachPayRate The interest rate of each pay.
    * @param numOfPays The over all num of pays.
    * @returns the value of fixed monthly payment.
    */
-  public getMortgageFixedPayment(mortgageAmount: number, ratePerPay: number, numOfPays: number): number{
-    const powVal = Math.pow((1 + ratePerPay),numOfPays);
-    const fixPayment = mortgageAmount * ratePerPay * powVal / (powVal - 1);
+  public getMortgageFixedPayment(
+      mortgageAmount: number,
+      eachPayRate: number,
+      numOfPays: number,
+    ): number{
+    const powVal = Math.pow((1 + eachPayRate),numOfPays);
+    const fixPayment = mortgageAmount * eachPayRate * powVal / (powVal - 1);
     return fixPayment;
   }
 
@@ -73,17 +77,81 @@ export class MortgageCalculatorComponent {
  * Returns the value interest payment amount the payments.
  * @param mortgageAmount The principle amount of mortgage.
  * @param mortgagePayment The fix mortgage payment of each pay.
- * @param ratePerPay The interest rate of each payment.
+ * @param eachPayRate The interest rate of each payment.
  * @param numOfPays The number of payments.
- * @returns the interest payment in total payments.
+ * @param paymentIndex The no. of the prepayment
+ * @param prepayFrequency The frequency of prepayment
+ * @param prepayAmount The amount of prepayment.
+ * @param prepayStartInNthPay The prepayment start from nth payment.
+ * @returns the mortgage payment detail.
  */
-  public getInterestPaymentInNumOfPays(mortgageAmount: number, mortgagePayment: number, ratePerPay: number, numOfPays: number): number{
-    if (numOfPays <= 0){
-      return 0;
+  public getMortgagePaymentInNumOfPays(
+    mortgageAmount: number,
+    mortgagePayment: number,
+    eachPayRate: number,
+    numOfPays: number,
+    paymentIndex: number,
+    prepayFrequency?: number,
+    prepayAmount?: number,
+    prepayStartInNthPay? : number
+    ): any{
+
+    if (numOfPays <=0 ){
+      return {
+        totalInterestPay: 0,
+        totalCost: 0,
+        lastMortgagePay: 0,
+        actualNumOfPays: paymentIndex - 1
+      };
     }
-    const interestPayment = mortgageAmount * ratePerPay;
-    const nextmortgageAmount = mortgageAmount - (mortgagePayment - interestPayment);
-    return interestPayment + this.getInterestPaymentInNumOfPays(nextmortgageAmount, mortgagePayment, ratePerPay, numOfPays - 1);
+
+    if (mortgageAmount < 1){
+      return {
+              totalInterestPay: 0,
+              totalCost: 0,
+              lastMortgagePay: 0,
+              actualNumOfPays: paymentIndex - 1
+            };
+    }
+
+    const interestPayment = mortgageAmount * eachPayRate;
+    if (mortgageAmount + interestPayment + 1 < mortgagePayment) {
+      return {
+              totalInterestPay: interestPayment,
+              totalCost: mortgageAmount + interestPayment,
+              lastMortgagePay: mortgageAmount + interestPayment,
+              actualNumOfPays: paymentIndex
+             };
+    }
+
+    let nextMortgageAmount = mortgageAmount - (mortgagePayment - interestPayment);
+    let prepayValue = 0;
+    if (prepayAmount && prepayFrequency && prepayStartInNthPay &&
+        prepayStartInNthPay <= paymentIndex && ( // if the current pay is after trigger the first repay
+        (prepayFrequency == 1 ) || // prepay each payment
+        (prepayFrequency > 1 && paymentIndex % prepayFrequency == 0) || // prepay in every n times of payment
+        (prepayFrequency == 0 && paymentIndex == prepayStartInNthPay) // prepay only once
+      )) {
+        prepayValue = prepayAmount;
+    }
+
+    const nextInterestResult = this.getMortgagePaymentInNumOfPays(
+      nextMortgageAmount - prepayValue,
+      mortgagePayment,
+      eachPayRate,
+      numOfPays - 1,
+      paymentIndex + 1,
+      prepayFrequency,
+      prepayAmount,
+      prepayStartInNthPay
+    );
+
+    return {
+            totalInterestPay: nextInterestResult.totalInterestPay + interestPayment,
+            totalCost: nextInterestResult.totalCost + mortgagePayment + prepayValue,
+            lastMortgagePay: nextInterestResult.lastMortgagePay,
+            actualNumOfPays: nextInterestResult.actualNumOfPays
+            };
   }
 
   /**
@@ -93,12 +161,12 @@ export class MortgageCalculatorComponent {
    * @returns the number of pays in the limited time period, throw error if the frequency if not valid.
    */
   public getNumOfPays(frequency: string, months: number): number {
-        // "AccW"--> Accelerated Weekly
-        // "W"--> Weekly
-        // "AccBiW"--> Accelerated Bi-weekly
-        // "BiW"--> Bi-Weekly (every 2 weeks)
-        // "SemiM"--> Semi-monthly (24x per year)
-        // "M"--> Monthly (12x per year)
+    // "AccW"--> Accelerated Weekly
+    // "W"--> Weekly
+    // "AccBiW"--> Accelerated Bi-weekly
+    // "BiW"--> Bi-Weekly (every 2 weeks)
+    // "SemiM"--> Semi-monthly (24x per year)
+    // "M"--> Monthly (12x per year)
     switch (frequency) {
       case "AccW":
         return 52*months/12;
@@ -152,58 +220,77 @@ export class MortgageCalculatorComponent {
 
 /**
  * Set the mortgage result.
- * @param formFiledInput The mortgage inputs.
  */
-  setMortgageResult(formFiledInput: FormFiledInput) {
+  setMortgageResult() {
     const mortgageAmount = this.inputFormGroup.value.mortgageAmount || 1000000;
     const rate = this.inputFormGroup.value.interestRate || 4;
     const frequency = this.inputFormGroup.value.paymentFrequency || "M";
     const periodYears = this.inputFormGroup.value.amortPeriodYear ||30;
     const periodMonths = this.inputFormGroup.value.amortPeriodMonth || 0;
     const terms = this.inputFormGroup.value.term || 2;
+    const prepayAmount = this.inputFormGroup.value.prepayAmount;
+    const prepayFrequency = this.inputFormGroup.value.prepayFrequency;
+    const prepayStartNthPay = this.inputFormGroup.value.prepayStartNthPay;
+
     const numOfPaysPerYear = this.getNumOfPays(frequency, 12);
-    const ratePerPay = rate/numOfPaysPerYear/100;
+    const eachPayRate = rate/numOfPaysPerYear/100;
+    const numberOfPaymentsInPeriod = this.getNumOfPays(frequency, periodYears * 12 + periodMonths);
+    const numberOfPaymentsInTerm = this.getNumOfPays(frequency, terms * 12);
+    const fixedMortgagePayment = this.getMortgageFixedPayment(mortgageAmount, eachPayRate, numberOfPaymentsInPeriod);
 
-    if(mortgageAmount && ratePerPay){
-      const numberOfPaymentsInPeriod = this.getNumOfPays(frequency, periodYears * 12 + periodMonths);
-      const numberOfPaymentsInTerm = this.getNumOfPays(frequency, terms * 12);
-      const fixedMortgagePayment = this.getMortgageFixedPayment(mortgageAmount, ratePerPay, numberOfPaymentsInPeriod);
-      const interestPaymentInTerm = this.getInterestPaymentInNumOfPays(mortgageAmount, fixedMortgagePayment, ratePerPay, numberOfPaymentsInTerm)
-      const totalCostInTerm = fixedMortgagePayment * numberOfPaymentsInTerm;
-      const interestPaymentInPeriod = this.getInterestPaymentInNumOfPays(mortgageAmount, fixedMortgagePayment, ratePerPay, numberOfPaymentsInPeriod)
-      const totalCostInPeriod = fixedMortgagePayment * numberOfPaymentsInPeriod;
+    let prepayFrequencyNum = prepayFrequency == "Y"? 12 : prepayFrequency;
 
-      this.mortgageResult.push({
-        name: "Number of Payments",
-        termValue: numberOfPaymentsInTerm.toFixed(0).toString(),
-        amortPeriodValue: numberOfPaymentsInPeriod.toFixed(0).toString()
-      });
+    const mortgagePaymentInTerm = this.getMortgagePaymentInNumOfPays(
+      mortgageAmount,
+      fixedMortgagePayment,
+      eachPayRate,
+      numberOfPaymentsInTerm,
+      1,
+      prepayFrequencyNum,
+      prepayAmount,
+      prepayStartNthPay
+      )
+    const totalCostInTerm = fixedMortgagePayment * numberOfPaymentsInTerm;
+    const mortgagePaymentInPeriod = this.getMortgagePaymentInNumOfPays(
+      mortgageAmount,
+      fixedMortgagePayment,
+      eachPayRate,
+      numberOfPaymentsInPeriod,
+      1,
+      prepayFrequencyNum,
+      prepayAmount,
+      prepayStartNthPay
+      )
 
-      this.mortgageResult.push({
-        name: "Mortgage Payment",
-        termValue: "$" + fixedMortgagePayment.toFixed(2),
-        amortPeriodValue: "$" + fixedMortgagePayment.toFixed(2)
-      });
+    this.mortgageResult.push({
+      name: "Number of Payments",
+      termValue: numberOfPaymentsInTerm.toString(),
+      amortPeriodValue: mortgagePaymentInPeriod.lastMortgagePay.toFixed(0) == 0? mortgagePaymentInPeriod.actualNumOfPays.toString(): (mortgagePaymentInPeriod.actualNumOfPays - 1).toString() + " + 1 in " + mortgagePaymentInPeriod.lastMortgagePay.toFixed(2).toString()
+    });
 
-      this.mortgageResult.push({
-        name: "Principal Payments",
-        termValue: "$" + (totalCostInTerm - interestPaymentInTerm).toFixed(2),
-        amortPeriodValue: "$" + (totalCostInPeriod - interestPaymentInPeriod).toFixed(2)
-      });
+    this.mortgageResult.push({
+      name: "Mortgage Payment",
+      termValue: "$" + fixedMortgagePayment.toFixed(2),
+      amortPeriodValue: "$" + fixedMortgagePayment.toFixed(2)
+    });
 
-      this.mortgageResult.push({
-        name: "Interest Payments",
-        termValue: "$" + interestPaymentInTerm.toFixed(2),
-        amortPeriodValue: "$" + interestPaymentInPeriod.toFixed(2)
-      });
+    this.mortgageResult.push({
+      name: "Principal Payments",
+      termValue: "$" + (mortgagePaymentInTerm.totalCost - mortgagePaymentInTerm.totalInterestPay).toFixed(2),
+      amortPeriodValue: "$" + (mortgagePaymentInPeriod.totalCost - mortgagePaymentInPeriod.totalInterestPay).toFixed(2)
+    });
 
-      this.mortgageResult.push({
-        name: "Total Cost",
-        termValue: "$" + totalCostInTerm.toFixed(2),
-        amortPeriodValue: "$" + totalCostInPeriod.toFixed(2)
-      });
+    this.mortgageResult.push({
+      name: "Interest Payments",
+      termValue: "$" + mortgagePaymentInTerm.totalInterestPay.toFixed(2),
+      amortPeriodValue: "$" + mortgagePaymentInPeriod.totalInterestPay.toFixed(2)
+    });
 
-    }
+    this.mortgageResult.push({
+      name: "Total Cost",
+      termValue: "$" + mortgagePaymentInTerm.totalCost.toFixed(2),
+      amortPeriodValue: "$" + mortgagePaymentInPeriod.totalCost.toFixed(2)
+    });
   }
 
   onSubmit() {
@@ -213,7 +300,7 @@ export class MortgageCalculatorComponent {
       this.mortgageResult = [];
 
       //calculate result
-      this.setMortgageResult(this.formFiledInput);
+      this.setMortgageResult();
     }
 
     this.inputFormGroup.markAsUntouched();
