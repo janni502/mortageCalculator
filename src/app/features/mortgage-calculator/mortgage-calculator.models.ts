@@ -17,7 +17,7 @@ export interface FormFiledInput {
   mortgageAmount: number;
   interestRate: number;
   amortPeriodYear: number;
-  amortPeriodMonth: number;
+  amortPeriodMonth?: number;
   paymentFrequency: string;
   term: number;
   prepayAmount?: number;

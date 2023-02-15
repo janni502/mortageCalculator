@@ -1,86 +1,95 @@
 <div class="mortgageCalculator">
-  <div class="mortgage-inputForm row">
-    <div class="payment-inputForm col">
-      <h1> Payment Plan</h1>
-      <mat-form-field appearance="fill">
-          <mat-label>Mortgage Amount</mat-label>
-          <input matInput type="number" [formControl]="integerControl" [(ngModel)]="formFiledInput.mortgageAmount">
-          <span matTextPrefix>$&nbsp;</span>
-        </mat-form-field>
-      <div class="col5">
-        <mat-form-field appearance="fill" floatLabel="always">
-          <mat-label>Interest Rate</mat-label>
-          <input matInput type="number" [formControl]="rateControl" placeholder="0.00" [(ngModel)]="formFiledInput.interestRate">
-          <span matTextSuffix>%&nbsp;</span>
-        </mat-form-field>
+  <form [formGroup]="inputFormGroup" (ngSubmit)="onSubmit()">
+    <div class="mortgage-inputForm row">
+      <div class="payment-inputForm col">
+        <h1> Payment Plan</h1>
         <mat-form-field appearance="fill">
-          <mat-label>Term</mat-label>
-          <mat-select [(ngModel)]="formFiledInput.term">
-            <mat-option *ngFor="let num of termsOptions" [value]="num">
-              {{num}}
-            </mat-option>
+            <mat-label>Mortgage Amount</mat-label>
+            <input matInput type="number" formControlName="mortgageAmount">
+            <mat-error *ngIf="inputFormGroup.get('mortgageAmount')?.hasError('min')">require positive number.</mat-error>
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+        <div class="col5">
+          <mat-form-field appearance="fill" floatLabel="always">
+            <mat-label>Interest Rate</mat-label>
+            <input matInput type="number" placeholder="0.00" formControlName="interestRate">
+            <mat-error *ngIf="inputFormGroup.get('interestRate')?.invalid"> must in 1 to 100.</mat-error>
+            <span matTextSuffix>%&nbsp;</span>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Term</mat-label>
+            <mat-select formControlName="term">
+              <mat-option *ngFor="let num of termsOptions" [value]="num">
+                {{num}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="inputFormGroup.get('term')?.hasError('min')">require positive number.</mat-error>
+            <mat-error *ngIf="inputFormGroup.get('term')?.hasError('max')">term should be smaller than amortization period.</mat-error>
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Payment Frequency</mat-label>
+          <mat-select formControlName="paymentFrequency">
+            <mat-option value="AccW">Accelerated Weekly</mat-option>
+            <mat-option value="W">Weekly</mat-option>
+            <mat-option value="AccBiW">Accelerated Bi-weekly</mat-option>
+            <mat-option value="BiW">Bi-Weekly (every 2 weeks)</mat-option>
+            <mat-option value="SemiM">Semi-monthly (24x per year)</mat-option>
+            <mat-option value="M">Monthly (12x per year)</mat-option>
           </mat-select>
         </mat-form-field>
+        <span>Amortization Period :</span>
+        <div class="yearsAndMonths col5">
+          <mat-form-field appearance="fill">
+            <mat-label>Years</mat-label>
+            <mat-select formControlName="amortPeriodYear">
+              <mat-option>None</mat-option>
+              <mat-option *ngFor="let num of yearsOptions" [value]="num">
+                {{num}}
+              </mat-option>
+              <mat-error *ngIf="inputFormGroup.get('amortPeriodYear')?.hasError('min')">require positive number.</mat-error>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Months</mat-label>
+            <mat-select formControlName="amortPeriodMonth">
+              <mat-option>None</mat-option>
+              <mat-option *ngFor="let num of monthsOptions" [value]="num">
+                {{num}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
       </div>
-      <mat-form-field appearance="fill">
-        <mat-label>Payment Frequency</mat-label>
-        <mat-select [(ngModel)]="formFiledInput.paymentFrequency">
-          <mat-option value="AccW">Accelerated Weekly</mat-option>
-          <mat-option value="W">Weekly</mat-option>
-          <mat-option value="AccBiW">Accelerated Bi-weekly</mat-option>
-          <mat-option value="BiW">Bi-Weekly (every 2 weeks)</mat-option>
-          <mat-option value="SemiM">Semi-monthly (24x per year)</mat-option>
-          <mat-option value="M">Monthly (12x per year)</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <span>Amortization Period :</span>
-      <div class="yearsAndMonths col5">
+      <div class="prePayment-inputForm col">
+        <h1> Prepayment Plan</h1>
+        <div class="col5">
+          <mat-form-field appearance="fill">
+            <mat-label>Prepayment Amount</mat-label>
+            <input type="number" matInput formControlName="prepayAmount">
+            <span matTextPrefix>$&nbsp;</span>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Start With Payment</mat-label>
+            <input type="number" placeholder="eg. 1" matInput formControlName="prepayStartNthPay">
+            <mat-error *ngIf="inputFormGroup.get('prepayStartNthPay')?.hasError('min')">require positive number.</mat-error>
+          </mat-form-field>
+        </div>
         <mat-form-field appearance="fill">
-          <mat-label>Years</mat-label>
-          <mat-select [(ngModel)]="formFiledInput.amortPeriodYear">
+          <mat-label>Prepayment Frequency</mat-label>
+          <mat-select formControlName="prepayFrequency">
             <mat-option>None</mat-option>
-            <mat-option *ngFor="let num of yearsOptions" [value]="num">
-              {{num}}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Months</mat-label>
-          <mat-select [(ngModel)]="formFiledInput.amortPeriodMonth">
-            <mat-option>None</mat-option>
-            <mat-option *ngFor="let num of monthsOptions" [value]="num">
-              {{num}}
-            </mat-option>
+            <mat-option value="1">One time</mat-option>
+            <mat-option value="Y">Each year</mat-option>
+            <mat-option value="SameAsRegPay">Same as regular</mat-option>
           </mat-select>
         </mat-form-field>
       </div>
     </div>
-    <div class="prePayment-inputForm col">
-      <h1> Prepayment Plan</h1>
-      <div class="col5">
-        <mat-form-field appearance="fill">
-          <mat-label>Prepayment Amount</mat-label>
-          <input type="number" [formControl]="integerControl" matInput [(ngModel)]="formFiledInput.prepayAmount">
-          <span matTextPrefix>$&nbsp;</span>
-        </mat-form-field>
-        <mat-form-field appearance="fill">
-          <mat-label>Start With Payment</mat-label>
-          <input type="number" [formControl]="integerControl" placeholder="eg. 1" matInput [(ngModel)]="formFiledInput.prepayStartNthPay">
-        </mat-form-field>
-      </div>
-      <mat-form-field appearance="fill">
-        <mat-label>Prepayment Frequency</mat-label>
-        <mat-select [(ngModel)]="formFiledInput.prepayFrequency">
-          <mat-option value="1">One time</mat-option>
-          <mat-option value="Y">Each year</mat-option>
-          <mat-option value="SameAsRegPay">Same as regular</mat-option>
-        </mat-select>
-      </mat-form-field>
+    <div class="buttonContainer row">
+      <button mat-flat-button color="primary" type="submit">Calculate</button>
     </div>
-  </div>
-  <div class="buttonContainer row">
-    <button mat-flat-button color="primary" (click)="submit()">Calculate</button>
-  </div>
+  </form>
   <div class="tableContainer row" *ngIf="mortgageResult.length > 0">
     <table mat-table [dataSource]="mortgageResult" class="mat-elevation-z8 demo-table">
       <!-- Name Column -->

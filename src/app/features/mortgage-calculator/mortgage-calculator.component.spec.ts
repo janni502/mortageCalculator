@@ -34,13 +34,35 @@ describe('MortgageCalculatorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should have Fixed Payment calculate correctly', () => {
+  it('should get the correct fixed payment', () => {
     expect(component).toBeTruthy();
     const mortgageAmount = 1000000;
     const numOfPays = 12*10;
-    const monthlyRate = 12/12/100;
-    const fixedPayment = component.getMortgageFixedPayment(mortgageAmount, monthlyRate, numOfPays);
+    const ratePerPay = 12/12/100;
+    const fixedPayment = component.getMortgageFixedPayment(mortgageAmount, ratePerPay, numOfPays);
     expect(fixedPayment).toBe(14347.094840258731);
+  });
+
+  it('should get the correct interest payment', () => {
+    expect(component).toBeTruthy();
+    const mortgageAmount = 1000000;
+    const mortgagePayment = 14347.09484025873;
+    const numOfPays = 12*10;
+    const ratePerPay = 12/12/100;
+    const interestPayment = component.getInterestPaymentInNumOfPays(mortgageAmount, mortgagePayment, ratePerPay, numOfPays);
+    expect(interestPayment).toBe(721651.3808310498);
+  });
+
+  it('should get correct number of pays with input.', () => {
+
+  });
+
+  it('should throw error when frequency is not valid.', () => {
+
+  });
+
+  it('should trigger error message when missing required input.', () => {
+
   });
 
   it('should create', () => {
