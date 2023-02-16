@@ -11,7 +11,7 @@ export class MortgageCalculatorComponent {
   monthsOptions = Array.from(Array(12), (x, i) => i + 1);
   yearsOptions = Array.from(Array(30), (x, i) => i + 1);
   termsOptions = Array.from(Array(10), (x, i) => i + 1);
-  displayedColumns: string[] = ['col-name', 'col-term', 'col-period'];  // displayedColumns = ["name"];
+  displayedColumns: string[] = ['col-name', 'col-term', 'col-period'];
   mortgageInTerm: MortgageDetail = {} as MortgageDetail;
   mortgageInAmortPeriod: MortgageDetail = {} as MortgageDetail;
   mortgageResult: MortgageDetail[] = [];
@@ -33,7 +33,7 @@ export class MortgageCalculatorComponent {
       prepayStartNthPay: new FormControl('', [Validators.min(1)])
     });
 
-    // customer the period validators
+    // change validators
     this.inputFormGroup.get('amortPeriodYear')?.valueChanges.subscribe(val => {
       if (val > 0) {
         this.inputFormGroup.controls['term'].clearValidators();
