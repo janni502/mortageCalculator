@@ -2,21 +2,21 @@
   <form [formGroup]="inputFormGroup" (ngSubmit)="onSubmit()">
     <div class="mortgage-inputForm row">
       <div class="payment-inputForm col">
-        <h1> Payment Plan</h1>
-        <mat-form-field appearance="fill">
-            <mat-label>Mortgage Amount</mat-label>
-            <input matInput type="number" formControlName="mortgageAmount">
-            <mat-error *ngIf="inputFormGroup.get('mortgageAmount')?.hasError('min')">require positive number.</mat-error>
-            <span matTextPrefix>$&nbsp;</span>
-          </mat-form-field>
+        <h1>Payment Plan</h1>
+        <mat-form-field appearance="fill" id="amount">
+          <mat-label>Mortgage Amount</mat-label>
+          <input matInput type="number" formControlName="mortgageAmount">
+          <mat-error *ngIf="inputFormGroup.get('mortgageAmount')?.hasError('min')">require positive number.</mat-error>
+          <span matTextPrefix>$&nbsp;</span>
+        </mat-form-field>
         <div class="col5">
-          <mat-form-field appearance="fill" floatLabel="always">
+          <mat-form-field appearance="fill" floatLabel="always" id="rate">
             <mat-label>Interest Rate</mat-label>
             <input matInput type="number" placeholder="0.00" formControlName="interestRate">
             <mat-error *ngIf="inputFormGroup.get('interestRate')?.invalid"> must in 1 to 100.</mat-error>
             <span matTextSuffix>%&nbsp;</span>
           </mat-form-field>
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" id="term">
             <mat-label>Term</mat-label>
             <mat-select formControlName="term">
               <mat-option *ngFor="let num of termsOptions" [value]="num">
@@ -24,10 +24,11 @@
               </mat-option>
             </mat-select>
             <mat-error *ngIf="inputFormGroup.get('term')?.hasError('min')">require positive number.</mat-error>
-            <mat-error *ngIf="inputFormGroup.get('term')?.hasError('max')">term should be smaller than amortization period.</mat-error>
+            <mat-error *ngIf="inputFormGroup.get('term')?.hasError('max')">term should be smaller than amortization
+              period.</mat-error>
           </mat-form-field>
         </div>
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" id="frequency">
           <mat-label>Payment Frequency</mat-label>
           <mat-select formControlName="paymentFrequency">
             <mat-option value="AccW">Accelerated Weekly</mat-option>
@@ -40,17 +41,18 @@
         </mat-form-field>
         <span>Amortization Period :</span>
         <div class="yearsAndMonths col5">
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" id="years">
             <mat-label>Years</mat-label>
             <mat-select formControlName="amortPeriodYear">
               <mat-option>None</mat-option>
               <mat-option *ngFor="let num of yearsOptions" [value]="num">
                 {{num}}
               </mat-option>
-              <mat-error *ngIf="inputFormGroup.get('amortPeriodYear')?.hasError('min')">require positive number.</mat-error>
+              <mat-error *ngIf="inputFormGroup.get('amortPeriodYear')?.hasError('min')">require positive
+                number.</mat-error>
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" id="months">
             <mat-label>Months</mat-label>
             <mat-select formControlName="amortPeriodMonth">
               <mat-option>None</mat-option>
@@ -62,20 +64,21 @@
         </div>
       </div>
       <div class="prePayment-inputForm col">
-        <h1> Prepayment Plan</h1>
+        <h1>Prepayment Plan</h1>
         <div class="col5">
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" id="preAmount">
             <mat-label>Prepayment Amount</mat-label>
             <input type="number" matInput formControlName="prepayAmount">
             <span matTextPrefix>$&nbsp;</span>
           </mat-form-field>
-          <mat-form-field appearance="fill">
+          <mat-form-field appearance="fill" id="preStart">
             <mat-label>Start With Payment</mat-label>
             <input type="number" placeholder="eg. 1" matInput formControlName="prepayStartNthPay">
-            <mat-error *ngIf="inputFormGroup.get('prepayStartNthPay')?.hasError('min')">require positive number.</mat-error>
+            <mat-error *ngIf="inputFormGroup.get('prepayStartNthPay')?.hasError('min')">require positive
+              number.</mat-error>
           </mat-form-field>
         </div>
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" id="preFrequency">
           <mat-label>Prepayment Frequency</mat-label>
           <mat-select formControlName="prepayFrequency">
             <mat-option>None</mat-option>

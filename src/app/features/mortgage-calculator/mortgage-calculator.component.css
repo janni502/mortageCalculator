@@ -2,9 +2,9 @@
   display: block;
 }
 
-@media (max-width: 465px){
-  .container{
-      display: none;
+@media (max-width: 465px) {
+  .container {
+    display: none;
   }
 
   .col5 {
@@ -14,7 +14,7 @@
   }
 }
 
-mat-form-field{
+mat-form-field {
   width: auto;
 }
 
@@ -28,14 +28,14 @@ mat-form-field{
   align-items: flex-start;
   flex-wrap: wrap;
   justify-content: center;
-  }
+}
 
 .col {
   display: flex;
   flex-direction: column;
   margin-inline: 15px;
   width: 435px;
-  }
+}
 
 .col5 {
   display: flex;
@@ -50,4 +50,3 @@ mat-form-field{
   margin: 30px auto auto auto;
   max-width: 625px;
 }
-
