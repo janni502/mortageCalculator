@@ -1,11 +1,32 @@
-import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { TestBed } from '@angular/core/testing';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatRippleModule } from '@angular/material/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
+import { MortgageCalculatorComponent } from './features/mortgage-calculator/mortgage-calculator.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
-        AppComponent
+        AppComponent,
+        MortgageCalculatorComponent
+      ],
+      imports: [
+        BrowserAnimationsModule,
+        FormsModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRippleModule,
+        MatSelectModule,
+        MatTableModule,
+        ReactiveFormsModule
       ],
     }).compileComponents();
   });
@@ -16,16 +37,9 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'rbc_mortgageCal'`, () => {
+  it(`should have as title 'Mortgage Calculator'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('rbc_mortgageCal');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('rbc_mortgageCal app is running!');
+    expect(app.title).toEqual('Mortgage Calculator');
   });
 });
